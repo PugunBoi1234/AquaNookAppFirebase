@@ -1,0 +1,17 @@
+{
+	"flutter": {
+		"platforms": {
+			"dart": {
+				"lib/firebase_options.dart": {
+					"projectId": "cozyaquapet",
+					"configurations": {
+						"web": "1:498249162091:web:f6f0a7112c429dc211802e"
+					}
+				}
+			}
+		}
+	},
+	"functions": {
+		"source": "functions"
+	}
+}

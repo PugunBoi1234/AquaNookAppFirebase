@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Profile photos: users/{uid}/avatar.jpg — only the owner can upload,
+    // anyone signed in can view (avatars show up on other people's
+    // screens too, e.g. in "Sold by").
+    match /users/{userId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Product photos users upload when listing something themselves:
+    // products/{uid}/{anything}
+    match /products/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

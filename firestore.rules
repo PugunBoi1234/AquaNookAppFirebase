@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Product catalogue — anyone can browse, only signed-in users can
+    // list new products, and only the seller who owns a listing (or a
+    // built-in shop with no owner) can edit/delete it.
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.sellerId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                    && resource.data.sellerId == request.auth.uid;
+    }
+
+    // Sellers — the 8 built-in shops (ids "1".."8") are seeded once and
+    // read-only from the app. A "community seller" doc (id == uid) can
+    // only be created/edited by that same user.
+    match /sellers/{sellerId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == sellerId;
+    }
+
+    // User profiles — anyone signed in can read (needed to show names/
+    // avatars elsewhere), but you can only write your own document.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Shared counter used to hand out the next numeric product id.
+    // Any signed-in user may bump it (guarded further by the app's own
+    // transaction logic).
+    match /counters/{counterId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
